@@ -1,0 +1,36 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 16,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "binaryDir": "build",
+      "installDir": "${sourceDir}/build/install",
+      "cacheVariables": {
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "MYXML_BUILD_TESTS": "OFF",
+        "MYXML_BUILD_EXAMPLES": "OFF",
+        "MYXML_ENABLE_WARNING": "OFF",
+        "MYXML_ENABLE_PACKING": "OFF"
+      }
+    },
+    {
+      "name": "develop",
+      "binaryDir": "build",
+      "installDir": "${sourceDir}/build/install",
+      "generator": "MinGW Makefiles",
+      "cacheVariables": {
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "MYXML_BUILD_TESTS": "ON",
+        "MYXML_BUILD_EXAMPLES": "ON",
+        "MYXML_ENABLE_WARNING": "ON",
+        "MYXML_ENABLE_PACKING": "OFF"
+      }
+    }
+  ],
+  "testPresets": []
+}

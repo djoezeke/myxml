@@ -1,0 +1,22 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Myxml | YAML for Modern C/C++ 📚
+    url: https://github.com/djoezeke/myxml
+    about: Simple and Fast XML Parser for Modern C/C++.
+
+  - name: Myxml Discussions 💖
+    url: https://github.com/djoezeke/myxml/discussions
+    about: The "Discussions" forum is where you want to start.
+
+  - name: Myxml Issues | Bug Bounty 🐞
+    url: https://github.com/djoezeke/myxml/issues
+    about: Please report issues and vulnerabilities here.
+
+  - name: Myxml Releases & Tags 📦
+    url: https://github.com/djoezeke/myxml/releases
+    about: Please latest Myxml release here.
+
+  - name: Myxml Documentation 📚
+    url: https://djoezeke.github.io/myxml/
+    about: Please refer to the Myxml documentation here.
