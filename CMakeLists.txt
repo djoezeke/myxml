@@ -144,7 +144,7 @@ else()
     set_target_properties(${MYXML_LIB_NAME} PROPERTIES DEFINE_SYMBOL MYXML_BUILD_STATIC)
 endif()
 
-if(MYJSON_ENABLE_SANITIZERS)
+if(MYXML_ENABLE_SANITIZERS)
     string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer -fno-sanitize-recover=all -fsanitize=undefined")
 endif()
 

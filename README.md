@@ -1,4 +1,4 @@
-<p align="center"><h1 align="center">🚀 Myxml: Modern C++ XML Library</h1></p>
+<p align="center"><h1 align="center">🚀 MYXML : Modern C/C++ XML Library</h1></p>
 
 <p align="center">
     <em><code>Lightweight, modern, and easy-to-use C++ XML serializer & deserializer.</code></em>
@@ -21,12 +21,18 @@
 - [🚀 Getting Started](#-getting-started)
   - [☑️ Prerequisites](#-prerequisites)
   - [🛠️ Integration](#-integration)
-  - [🤖 Usage](#🤖-usage)
-  - [🧪 Testing](#🧪-testing)
+    <!-- - [git](#git-submodule) -->
+    <!-- - [CMake](#cmake-fetchcontent) -->
+  - [🤖 Usage](#-usage)
+  <!-- - [🤖 Example](#-example) -->
+  - [🧪 Testing](#-testing)
+  <!-- - [🧪 Benchmarking](#-benchmarking) -->
 - [📌 Project Roadmap](#-project-roadmap)
 - [ Support](#-support)
 - [🔰 Contributing](#-contributing)
+  <!-- - [Contributors](#contributors) -->
 - [🙌 Acknowledgments](#-acknowledgments)
+  <!-- - [Used third party tools](#used-third-party-tools) -->
 - [📄 License](#-license)
 
 </details>
@@ -41,29 +47,23 @@
 
 XML(eXtensible Markup Language) is a light-weight data exchange format. More information about XML can be obtained at [here]()
 
-## Design Goals
+<!-- ## Design Goals
 
 Myxml has been developed with these design goals:
 
-### 💼 **Portable**
+- 💼 **Portable** The library depends only on C/C++ standards, and is carefully designed to work on many platforms so that Myxml can be imported into existing C or C++ projects written in either C11, C++11 or later.
+  Furthermore, the project supports [CMake](https://cmake.org/) and provides [the documentation exclusively for CMake integration](https://djoezeke.github.io/myxml/tutorials/cmake_integration).
+  Those characteristics allow existing C or C++ project using CMake for builds to quickly incorporate XML support with just a little effort.
 
-The library depends only on C/C++ standards, and is carefully designed to work on many platforms so that Myxml can be imported into existing C or C++ projects written in either C11, C++11 or later.
-Furthermore, the project supports [CMake](https://cmake.org/) and provides [the documentation exclusively for CMake integration](https://djoezeke.github.io/myxml/tutorials/cmake_integration).
-Those characteristics allow existing C or C++ project using CMake for builds to quickly incorporate XML support with just a little effort.
+- 🪰 **Heavily Tested** Myxml has been [unit-tested](https://github.com/djoezeke/myxml/tree/main/tests/) and its test suite covers 100% of lines and conditions of the codebase. (You can see the actual coverage [here](#).)
+  We check with [Valgrind](https://valgrind.org) and the [Clang Sanitizers](https://clang.llvm.org/docs/index.html) that there are no runtime issues such as memory leak.
+  Furthermore, the quality of our codebase has been checked with [Clang-Tidy](https://releases.llvm.org/14.0.0/tools/clang/tools/extra/docs/clang-tidy/index.html), [CodeQL](https://codeql.github.com/docs/) and [Codacy](https://www.codacy.com/).
+  [GitHub Actions](https://docs.github.com/en/actions) workflows run against every commit pushed on the main & develop branches to ensure that the fkYAML library can be successfully built/tested with a variety of compilers, operating systems and C/C++ standards.
+  See the [prerequisites](#-prerequisites) section for more details.
 
-### 🪰 **Heavily Tested**
-
-Myxml has been [unit-tested](https://github.com/djoezeke/myxml/tree/main/tests/) and its test suite covers 100% of lines and conditions of the codebase. (You can see the actual coverage [here](#).)  
-We check with [Valgrind](https://valgrind.org) and the [Clang Sanitizers](https://clang.llvm.org/docs/index.html) that there are no runtime issues such as memory leak.  
-Furthermore, the quality of our codebase has been checked with [Clang-Tidy](https://releases.llvm.org/14.0.0/tools/clang/tools/extra/docs/clang-tidy/index.html), [CodeQL](https://codeql.github.com/docs/) and [Codacy](https://www.codacy.com/).  
-[GitHub Actions](https://docs.github.com/en/actions) workflows run against every commit pushed on the main & develop branches to ensure that the fkYAML library can be successfully built/tested with a variety of compilers, operating systems and C/C++ standards.  
-See the [prerequisites](#-prerequisites) section for more details.
-
-### 📝 **Well Documented**
-
-[The documentation](https://djoezeke.github.io/myxml/) provides plenty of information so that users can understand what Myxml is and what they can achieve with Myxml.  
-For instance, [the tutorial pages](https://djoezeke.github.io/myxml/tutorials/) show how you can read/write/customize using Myxml to handle XML documents while creating a simple C/C++ project using CMake.  
-Also, [API reference pages](https://djoezeke.github.io/myxml/api/) provide more detailed, exclusive descriptions with example usages for each Myxml API.
+- 📝 **Well Documented** [The documentation](https://djoezeke.github.io/myxml/) provides plenty of information so that users can understand what Myxml is and what they can achieve with Myxml.
+  For instance, [the tutorial pages](https://djoezeke.github.io/myxml/tutorials/) show how you can read/write/customize using Myxml to handle XML documents while creating a simple C/C++ project using CMake.
+  Also, [API reference pages](https://djoezeke.github.io/myxml/api/) provide more detailed, exclusive descriptions with example usages for each Myxml API.
 
 ## ✨ Features
 
@@ -81,13 +81,14 @@ Here is the list you might want to know:
 - [API references](https://djoezeke.github.io/myxml/api/) - all the details with examples
 
 ### 📓 Note
+ -->
 
 <details closed>
 
 <summary> 📁 Project Structure</summary>
 
 ```sh
-Myxml/
+myxml/
 ├── CMakeLists.txt
 ├── LICENSE
 ├── myxml.hpp
@@ -109,7 +110,7 @@ Myxml/
 
 Please ensure your runtime environment meets the following requirements:
 
-- **C++17** or newer compiler
+- **C++11** or newer compiler
 - **CMake** (for building examples/tests)
 
 Myxml uses following software, tools and services:
