@@ -45,7 +45,52 @@
 
 <!-- ## About xml -->
 
-XML(eXtensible Markup Language) is a light-weight data exchange format. More information about XML can be obtained at [here]()
+<img align="right" src=".github/readme/XML_logo.svg" width="200" alt="XML Logo">
+
+### [Xml](https://w3.org/xml) [eXtensible Markup Language]
+
+#### A Human-friendly data serialization
+
+More information about XML can be obtained at [here](https://w3.org/xml).
+
+<!-- #### Xml Example.
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<name>Myxml : xml for Modern C/C++</name>
+<branches>main</branches>
+<branches>dev</branches>
+<author>djoezeke</author>
+<published>true</published>
+<tutorial>
+    <yaml>
+        <name>YAML Ain't Markup Language</name>
+        <type>awesome</type>
+        <born>2001</born>
+    </yaml>
+</tutorial>
+<tutorial>
+    <json>
+        <name>JavaScript Object Notation</name>
+        <type>great</type>
+        <born>2001</born>
+    </json>
+</tutorial>
+<tutorial>
+    <toml>
+        <name>Tom's Obvious Minimal Language</name>
+        <type>great</type>
+        <born>2013</born>
+    </toml>
+</tutorial>
+<tutorial>
+    <xml>
+        <name>Extensible Markup Language</name>
+        <type>good</type>
+        <born>1996</born>
+    </xml>
+</tutorial>
+``` -->
 
 <!-- ## Design Goals
 
