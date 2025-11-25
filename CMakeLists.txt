@@ -48,6 +48,12 @@ else()
   set(MYXML_IS_TOP_LEVEL OFF)
 endif()
 
+# Add UTF-8 encoding support for MSVC compiler.
+# This ensures that the MSVC compiler interprets source files as UTF-8 encoded,
+# which is useful for projects containing non-ASCII characters in source files.
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 #--------------------------------------------------------------------
 # Configure variables for the library   
 #--------------------------------------------------------------------
@@ -78,6 +84,17 @@ option(MYXML_INSTALL "Generate installation target" ${MYXML_IS_TOP_LEVEL})
 option(MYXML_ENABLE_WARNING "Enable warning messages." ${MYXML_IS_TOP_LEVEL})
 option(MYXML_ENABLE_PACKING "Enable packing with CPack." ${MYXML_IS_TOP_LEVEL})
 option(MYXML_ENABLE_SANITIZERS "Enable sanitizers" OFF)
+
+# option(MYXML_BUILD_EXAMPLES "Build the ${PROJECT_NAME} example applications" ${MYXML_IS_TOP_LEVEL})
+# option(MYXML_BUILD_SHARED "Build shared library" ${MYXML_IS_TOP_LEVEL})
+# option(MYXML_BUILD_DEBUG "Build debug version of library" ${MYXML_IS_TOP_LEVEL})
+# option(MYXML_BUILD_TESTS "Build the ${PROJECT_NAME} test programs" ${MYXML_IS_TOP_LEVEL})
+# option(MYXML_INSTALL_DOCS "Enable installation of documentation." ${MYXML_IS_TOP_LEVEL})
+
+# option(MYXML_ENABLE_INSTALL "Enable installation." ${MYXML_IS_TOP_LEVEL})
+# option(MYXML_ENABLE_DOXYGEN "Build documentation with Doxygen." ${MYXML_IS_TOP_LEVEL})
+# option(MYXML_ENABLE_WARNING "Enable warning messages." ${MYXML_IS_TOP_LEVEL})
+# option(MYXML_ENABLE_PACKING "Enable packing with CPack." ${MYXML_IS_TOP_LEVEL})
 
 option(MYXML_BUILD_C11 "Build Myxml with C11" OFF)
 option(MYXML_BUILD_C17 "Build Myxml with C17" ON)
@@ -120,6 +137,34 @@ set(MYXML_CMAKE_VERSION_CONFIG_FILE  ${MYXML_CMAKE_CONFIG_DIR}/${PROJECT_NAME}Co
 #--------------------------------------------------------------------
 # Build library targets
 #--------------------------------------------------------------------
+
+# If both shared and static libs are build at once with MSVC it generates a
+# shared library consisting of
+#
+# * a DLL (that contains the actual code) with filename suffix `.dll`,
+# * a correspoding import library (against which users should link) with
+#   filename suffix `.lib`.
+#
+# and a static library with filename suffix `.lib`
+#
+# As both, the shared import library and the static library share the same
+# basename and suffix one would overwrite the other.
+#
+# To solve this issue we set the PREFIX for *static* libs explicitely so MSVC
+# will build:
+#
+# * shared: myxml.dll
+# * import: myxml.lib
+# * static: libmyxml.lib
+#
+# and this for debug:
+#
+# * shared: myxml-d.dll
+# * import: myxml-d.lib
+# * static: libmyxml-d.lib
+#
+# As all other platforms already set `PREFIX` for all lib types they remain
+# unchanged. Therefore no `if(MSVC)` check is needed here.
 
 if(MYXML_BUILD_SHARED)
     option(BUILD_SHARED_LIBS "Build shared libraries" ON)
