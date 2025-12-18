@@ -8,29 +8,53 @@
   "configurePresets": [
     {
       "name": "default",
+      "hidden": false,
+      "generator": "Ninja",
       "binaryDir": "build",
       "installDir": "${sourceDir}/build/install",
+      "description": "Default build with static library, examples, and tests enabled",
       "cacheVariables": {
+        "CMAKE_C_EXTENSIONS": "OFF",
         "CMAKE_CXX_EXTENSIONS": "OFF",
-        "MYXML_BUILD_TESTS": "OFF",
-        "MYXML_BUILD_EXAMPLES": "OFF",
-        "MYXML_ENABLE_WARNING": "OFF",
-        "MYXML_ENABLE_PACKING": "OFF"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "MYXML_BUILD_TESTS": "ON",
+        "MYXML_BUILD_DEBUG": "OFF",
+        "MYXML_BUILD_SHARED": "ON",
+        "MYXML_BUILD_EXAMPLES": "ON"
       }
     },
     {
       "name": "develop",
-      "binaryDir": "build",
+      "hidden": false,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/develop",
       "installDir": "${sourceDir}/build/install",
-      "generator": "MinGW Makefiles",
+      "description": "Debug build for development with examples and tests enabled",
       "cacheVariables": {
+        "CMAKE_C_EXTENSIONS": "OFF",
         "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "MYXML_BUILD_TESTS": "ON",
-        "MYXML_BUILD_EXAMPLES": "ON",
-        "MYXML_ENABLE_WARNING": "ON",
-        "MYXML_ENABLE_PACKING": "OFF"
+        "MYXML_BUILD_DEBUG": "ON",
+        "MYXML_BUILD_SHARED": "ON",
+        "MYXML_BUILD_EXAMPLES": "ON"
       }
     }
   ],
-  "testPresets": []
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "develop",
+      "configurePreset": "develop",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
 }
