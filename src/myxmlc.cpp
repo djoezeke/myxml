@@ -5,11 +5,23 @@
 #include <myxml/myxml.h>
 #include <myxml/myxml.hpp>
 
+//-------------------------------------------------------------------------
+// [SECTION] Defines
+//-----------------------------------------------------------------------------
+
 #pragma region Internal
 
 #pragma endregion  // Internal
 
 #pragma region Myxml
+
+#ifdef __cplusplus
+extern "C" {
+#endif  //__cplusplus
+
+#ifdef __cplusplus
+};
+#endif  //__cplusplus
 
 #pragma endregion  // Myxml
 
