@@ -2,14 +2,20 @@
 // [SECTION] INCLUDES
 //-------------------------------------------------------------------------
 
-#include <myxml/myxml.h>
 #include <myxml/myxml.hpp>
 
 #pragma region Internal
 
+namespace myxml {
+namespace internal {};  // namespace internal
+
+};  // namespace myxml
+
 #pragma endregion  // Internal
 
 #pragma region Myxml
+
+namespace myxml {};  // namespace myxml
 
 #pragma endregion  // Myxml
 

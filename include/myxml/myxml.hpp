@@ -1,10 +1,69 @@
-#ifndef #define DJOEZEKE_MYXML
+#ifndef DJOEZEKE_MYXML_HPP
+#define DJOEZEKE_MYXML_HPP
 
-#define DJOEZEKE_MYXML
+// clang-format off
 
-namespace myxml {}  // namespace myxml
+#ifndef MYXML_SKIP_VERSION_CHECK
+    #if defined(MYXML_VERSION_MAJOR) && defined(MYXML_VERSION_MINOR) && defined(MYXML_VERSION_PATCH)
+        #if MYXML_VERSION_MAJOR != 0 || MYXML_VERSION_MINOR != 1 || MYXML_VERSION_PATCH != 0
+            #warning "Already included a different version of the library!"
+        #endif
+    #endif
+#endif  // MYXML_SKIP_VERSION_CHECK
 
-#endif  // #define DJOEZEKE_MYXML
+/**
+ * @defgroup version Version Information
+ * @brief Macros for library versioning.
+ * @{
+ */
+
+/**
+ * @def MYXML_VERSION_MAJOR
+ * @brief Major version number of the library.
+ * @note If this were version 1.2.3, this value would be 1.
+ * @since This macro is available since 0.1.0.
+ */
+#define MYXML_VERSION_MAJOR 0
+
+/**
+ * @def MYXML_VERSION_MINOR
+ * @brief Minor version number of the library.
+ * @note If this were version 1.2.3, this value would be 2.
+ * @since This macro is available since 0.1.0.
+ */
+#define MYXML_VERSION_MINOR 1
+
+/**
+ * @def MYXML_VERSION_PATCH
+ * @brief Patch version number of the library.
+ * @note If this were version 1.2.3, this value would be 3.
+ * @since This macro is available since 0.1.0.
+ */
+#define MYXML_VERSION_PATCH 0
+
+/**
+ * @def MYXML_VERSION
+ * @brief Library version string in the format @c "X.Y.Z",
+ * where @c X is the major version number, @c Y is a minor version
+ * number, and @c Z is the patch version number.
+ */
+#define MYXML_VERSION "0.1.0"
+
+/** @} */
+
+// clang-format on
+
+namespace myxml {
+
+/**
+ * @namespace literals
+ * @brief The literals namespace myxml::literals::
+ */
+inline namespace literals {}  // namespace literals
+
+}  // namespace myxml
+
+#endif  // DJOEZEKE_MYXML_HPP
 
 /**
  * LICENSE: MIT License
