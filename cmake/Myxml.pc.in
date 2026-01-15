@@ -2,7 +2,7 @@ prefix=@CMAKE_INSTALL_PREFIX@
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 
 Name: @PROJECT_NAME@
-Description: A C/C++ library for Xml
+Description: @PROJECT_DESCRIPTION@
+URL: @PROJECT_HOMEPAGE_URL@
 Version: @PROJECT_VERSION@
-URL: https://github.com/dkoezeke/myxml
 Cflags: -I${includedir}

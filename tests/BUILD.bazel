@@ -1,0 +1,28 @@
+# ===================================================================
+# Copyright © 2025 Sackey Ezekiel Etrue
+# Distributed under the terms of the MIT license.
+# ===================================================================
+
+#===========================
+# C++ Library Tests        #
+#===========================
+
+cc_test(
+	name = "myxml_test",
+	srcs = ["cxx/Version.test.cpp"],
+	deps = [":myxml", "//vendor/Catch2:catch2_main"],
+	includes = ["include"],
+)
+
+#===========================
+# C Library Tests          #
+#===========================
+
+cc_test(
+	name = "myxmlc_test",
+	srcs = ["c/Version.test.cpp"],
+	deps = [":myxmlc", "//vendor/Catch2:catch2_main"],
+	includes = ["include"],
+)
+
+# ===================================================================
