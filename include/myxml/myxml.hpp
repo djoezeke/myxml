@@ -682,6 +682,13 @@
     #define MYXML_UNLIKELY(expr) (!!(expr))
 #endif
 
+// switch usage of char8_t which has been available since C++20.
+#if defined(MYXML_HAS_CXX_20) && defined(__cpp_char8_t) && __cpp_char8_t >= 201811L
+    #define MYXML_HAS_CHAR8_T (1)
+#else
+    #define MYXML_HAS_CHAR8_T (0)
+#endif
+
 /** @} */
 
 
@@ -741,6 +748,12 @@
     #define MYXML_ASSERT(x) assert(x)
 #else
     #define MYXML_ASSERT(x)
+#endif
+
+#if MYXML_COMPILER_SINCE(GCC, 6, 0, 0)
+    #define MYXML_QUOTE_OPERATOR operator""_xml
+#else
+    #define MYXML_QUOTE_OPERATOR operator"" _xml
 #endif
 
 // clang-format on
@@ -1518,6 +1531,14 @@ namespace myxml
     bool operator<=(const version &lhs, const version &rhs) noexcept;
     bool operator>=(const version &lhs, const version &rhs) noexcept;
 
+    /**
+     * @brief Write the version object string into stream.
+     *
+     * @param[in] ostream An output stream object.
+     * @param[in] version A version object.
+     *
+     * @return Reference to the output stream object `ostream`.
+     */
     std::ostream &operator<<(std::ostream &ostream, const version &version);
 
     /**
@@ -1555,13 +1576,31 @@ namespace myxml
     // [SECTION] Function Declarations
     //-----------------------------------------------------------------------------
 
+    /**
+     * @brief A wrapper for the serialization feature.
+     *
+     * @param[in] stream An output stream object.
+     * @param[in] node A xml object.
+     *
+     * @return Reference to the output stream object `stream`.
+     */
+    std::ostream &operator<<(std::ostream &stream, const xml &node);
+
+    /**
+     * @brief A wrapper for the deserialization feature.
+     *
+     * @param[in] stream An input stream object.
+     * @param[in] node A xml object.
+     *
+     * @return Reference to the input stream object `stream`.
+     */
+    std::istream &operator>>(std::istream &stream, const xml &node);
+
 } // namespace myxml
 
 #pragma endregion // Myxml
 
 #pragma region Literal
-
-#if 0
 
 /**
  * @namespace myxml
@@ -1581,51 +1620,58 @@ namespace myxml
         // [SECTION] Function Declarations
         //-----------------------------------------------------------------------------
 
+        // Whitespace before the literal operator is deprecated in C++23 or later but required in C++11.
+        MYXML_CLANG_SUPPRESS_WARNING_WITH_PUSH("-Wdeprecated")
+
         /**
          * @brief Deserializes a `char` array into a `xml` object.
          *
          * @param s An input `char` array.
-         * @param n The size of `s`.
+         * @param node The size of `s`.
          *
          * @return The resulting `xml` object deserialized from `s`.
          */
-        inline xml operator""_xml(const char *s, std::size_t n);
+        inline xml MYXML_QUOTE_OPERATOR(const char *s, std::size_t node);
+
+#if MYXML_HAS_CHAR8_T
 
         /**
          * @brief Deserializes a `char8_t` array into a `xml` object.
          *
          * @param s An input `char8_t` array.
-         * @param n The size of `s`.
+         * @param node The size of `s`.
          *
          * @return The resulting `xml` object deserialized from `s`.
          */
-        inline xml operator""_xml(const char8_t *s, std::size_t n);
+        inline xml MYXML_QUOTE_OPERATOR(const char8_t *s, std::size_t node);
+
+#endif // MYXML_HAS_CHAR8_T
 
         /**
          * @brief Deserializes a `char16_t` array into a `xml` object.
          *
          * @param s An input `char16_t` array.
-         * @param n The size of `s`.
+         * @param node The size of `s`.
          *
          * @return The resulting `xml` object deserialized from `s`.
          */
-        inline xml operator""_xml(const char16_t *s, std::size_t n);
+        inline xml MYXML_QUOTE_OPERATOR(const char16_t *s, std::size_t node);
 
         /**
          * @brief Deserializes a `char32_t` array into a `xml` object.
          *
          * @param s An input `char32_t` array.
-         * @param n The size of `s`.
+         * @param node The size of `s`.
          *
          * @return The resulting `xml` object deserialized from `s`.
          */
-        inline xml operator""_xml(const char32_t *s, std::size_t n);
+        inline xml MYXML_QUOTE_OPERATOR(const char32_t *s, std::size_t node);
+
+        MYXML_CLANG_SUPPRESS_WARNING_POP
 
     } // namespace literals
 
 }; // namespace myxml
-
-#endif // 0
 
 #pragma endregion // Literal
 

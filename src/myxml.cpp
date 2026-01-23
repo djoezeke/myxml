@@ -48,9 +48,46 @@
 
 #include <myxml/myxml.hpp>
 
+#include <assert.h>
+#include <ctype.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>  //
+#include <stdlib.h> //
+#include <string.h> //
+
 //-------------------------------------------------------------------------
 // [SECTION] Defines
 //-----------------------------------------------------------------------------
+
+// clang-format off
+
+/** Byte order marks. */
+
+#ifndef MYXML_BOM_UTF8
+    #define MYXML_BOM_UTF8 "\xef\xbb\xbf"
+#endif // MYXML_BOM_UTF8
+
+#ifndef MYXML_BOM_UTF16LE
+    #define MYXML_BOM_UTF16LE "\xff\xfe"
+#endif // MYXML_BOM_UTF16LE
+
+#ifndef MYXML_BOM_UTF16BE
+    #define MYXML_BOM_UTF16BE "\xfe\xff"
+#endif // MYXML_BOM_UTF16BE
+
+#ifndef MYXML_BOM_UTF32LE
+    #define MYXML_BOM_UTF32LE "\xff\xfe\x00\x00"
+#endif // MYXML_BOM_UTF32LE
+
+#ifndef MYXML_BOM_UTF32BE
+    #define MYXML_BOM_UTF32BE "\x00\x00\xfe\xff"
+#endif // MYXML_BOM_UTF32BE
+
+// clang-format on
 
 #pragma region Detail
 
@@ -393,6 +430,13 @@ namespace myxml
     //-----------------------------------------------------------------------------
     // [SECTION] Functions Definitions
     //-----------------------------------------------------------------------------
+    // - operator<<()
+    // - operator>>()
+    //-----------------------------------------------------------------------------
+
+    std::ostream &operator<<(std::ostream &stream, const xml &node) {};
+
+    std::istream &operator>>(std::istream &stream, const xml &node) {};
 
 }; // namespace myxml
 
@@ -412,18 +456,21 @@ namespace myxml
         // [SECTION] Functions Definitions : Literals
         //-----------------------------------------------------------------------------
 
-        inline xml operator""_xml(const char *string, std::size_t size) {};
+        inline xml MYXML_QUOTE_OPERATOR(const char *string, std::size_t size) {};
 
-        inline xml operator""_xml(const char8_t *string, std::size_t size) {};
+#if MYXML_HAS_CHAR8_T
 
-        inline xml operator""_xml(const char16_t *string, std::size_t size) {};
+        inline xml MYXML_QUOTE_OPERATOR(const char8_t *string, std::size_t size) {};
 
-        inline xml operator""_xml(const char32_t *string, std::size_t size) {};
+#endif // MYXML_HAS_CHAR8_T
+
+        inline xml MYXML_QUOTE_OPERATOR(const char16_t *string, std::size_t size) {};
+
+        inline xml MYXML_QUOTE_OPERATOR(const char32_t *string, std::size_t size) {};
 
     }; // namespace literals
 
 }; // namespace myxml
-
 #endif // 0
 
 #pragma endregion // Literal
