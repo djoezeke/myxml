@@ -682,6 +682,7 @@
     #define MYXML_UNLIKELY(expr) (!!(expr))
 #endif
 
+
 // switch usage of char8_t which has been available since C++20.
 #if defined(MYXML_HAS_CXX_20) && defined(__cpp_char8_t) && __cpp_char8_t >= 201811L
     #define MYXML_HAS_CHAR8_T (1)
@@ -732,19 +733,35 @@
 
 /** @} */
 
-#if (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND)) && !defined(MYXML_NOEXCEPTION)
+#define MYXML_VERSION_CONCAT_(major, minor, patch) v##major##_##minor##_##patch
+#define MYXML_VERSION_CONCAT(major, minor, patch) MYXML_VERSION_CONCAT_(major, minor, patch)
+#define MYXML_VERSION_NAMESPACE_BEGIN  inline namespace \
+    MYXML_VERSION_CONCAT(MYXML_VERSION_MAJOR, MYXML_VERSION_MINOR, MYXML_VERSION_PATCH) {
+#define MYXML_VERSION_NAMESPACE_END    } /* inline namespace MYXML_VERSION */
+
+#if (defined(__cpp_exceptions) || defined(__EXCEPTIONS)) && !defined(MYXML_NO_EXCEPTIONS)
     #define MYXML_THROW(exception) throw exception
     #define MYXML_TRY try
     #define MYXML_CATCH(exception) catch(exception)
 #else
-    #include <cstdlib>
-    #define MYXML_THROW(exception) std::abort()
+  #define MYXML_REQUIRE(expression, error)                                                        \
+    do                                                                                             \
+    {                                                                                              \
+      if (MYXML_UNLIKELY(!(expression)))                                                          \
+      {                                                                                            \
+        printf("Error: %s (%s:%d)\n", error, __FILE__, __LINE__);        \
+        abort();                                                                                   \
+      }                                                                                            \
+    } while (0)
+    
+    #define MYXML_THROWE(exception) MYXML_REQUIRE(false, exception.what())
+    #define MYXML_THROW(exception) abort()
     #define MYXML_TRY if(true)
     #define MYXML_CATCH(exception) if(false)
 #endif
 
 #ifndef MYXML_ASSERT
-    #include <cassert> // assert
+    #include <assert.h> // assert
     #define MYXML_ASSERT(x) assert(x)
 #else
     #define MYXML_ASSERT(x)
@@ -756,32 +773,62 @@
     #define MYXML_QUOTE_OPERATOR operator"" _xml
 #endif
 
+/** 
+ * @brief One.
+ *
+ *  This is only semantic sugar for the number `1`.
+ *  @note You can instead use `1` or `true` .
+ *
+ */
+#define MYXML_TRUE 1
+
+/** 
+ * @brief Zero.
+ *
+ *  This is only semantic sugar for the number `0`.
+ *  @note You can instead use `0` or `false` .
+ *
+ */
+#define MYXML_FALSE 0
+
 // clang-format on
 
 #pragma region Forward
+
+/**
+ * @namespace myxml
+ * @brief Primary library namespace for the myxml API.
+ *
+ * All public types, enums and functions are declared in this namespace.
+ */
 namespace myxml
 {
+    MYXML_VERSION_NAMESPACE_BEGIN
+
     /**
-     * @namespace detail
-     * @brief The Details namespace myxml::detail::
+     * @namespace myxml::detail
+     * @brief Internal implementation details.
+     *
+     * Types and helpers in this namespace are not part of the public API
+     * and are subject to change without notice.
      */
     namespace detail
     {
         //-----------------------------------------------------------------------------
-        // [SECTION] Details Forward Declarations
+        // [SECTION] Details Declarations
         //-----------------------------------------------------------------------------
 
         /** Enumerations */
 
-        enum class token_t;
-        enum class error_t;
-        enum class event_t;
-        enum class value_t;
-        enum class break_t; /** Line break types. */
+        enum class token_t : uint8_t;
+        enum class error_t : uint8_t;
+        enum class event_t : uint8_t;
+        enum class value_t : uint8_t;
+        enum class break_t : uint8_t;
 
         /** Structures */
 
-        struct mark; /** The pointer position. */
+        struct mark;
         struct event;
         struct token;
 
@@ -791,20 +838,33 @@ namespace myxml
         class iadapter;
         class deserializer;
         class file_iadapter;
-        class stream_iadapter;
         class memory_iadapter;
+
+#ifndef MYXML_NO_STL
+        class stream_iadapter;
         class iterator_iadapter;
+#endif // MYXML_NO_STL
 
         // output
         class emitter;
         class oadapter;
         class serializer;
         class file_iadapter;
-        class stream_oadapter;
         class memory_oadapter;
+
+#ifndef MYXML_NO_STL
+        class stream_oadapter;
         class iterator_oadapter;
+#endif // MYXML_NO_STL
+
+        // encoding
+        struct utf8;
+        struct utf16;
+        struct utf32;
 
     } // namespace detail
+
+    MYXML_VERSION_NAMESPACE_END
 
 } // namespace myxml
 
@@ -814,26 +874,38 @@ namespace myxml
  */
 namespace myxml
 {
+    MYXML_VERSION_NAMESPACE_BEGIN
+
     //-----------------------------------------------------------------------------
-    // [SECTION] Myxml Forward Declarations
+    // [SECTION] Myxml Declarations
     //-----------------------------------------------------------------------------
 
     /** Enumerations */
 
-    enum class encoding; /** The stream encoding. */
-    enum class node_t;
+    enum class encoding : uint8_t;
+    enum class node_t : uint8_t;
 
     /** Structures */
 
     class xml;
     class version;
     class formatter;
+
+#ifndef MYXML_NO_EXCEPTIONS
     class exception;
+    class io_error;
+    class parse_error;
+    class encoding_error;
+#endif // MYXML_NO_EXCEPTIONS
+
+    MYXML_VERSION_NAMESPACE_END
 
 } // namespace myxml
 
 namespace myxml
 {
+    MYXML_VERSION_NAMESPACE_BEGIN
+
     /**
      * @namespace literals
      * @brief The Literals namespace myxml::literals::
@@ -841,10 +913,12 @@ namespace myxml
     namespace literals
     {
         //-----------------------------------------------------------------------------
-        // [SECTION] Literal Forward Declarations
+        // [SECTION] Literals Declarations
         //-----------------------------------------------------------------------------
 
     } // namespace literals
+
+    MYXML_VERSION_NAMESPACE_END
 
 } // namespace myxml
 
@@ -858,6 +932,7 @@ namespace myxml
  */
 namespace myxml
 {
+    MYXML_VERSION_NAMESPACE_BEGIN
 
     /**
      * @namespace detail
@@ -866,7 +941,7 @@ namespace myxml
     namespace detail
     {
         //-----------------------------------------------------------------------------
-        // [SECTION] Flags & Enumerations
+        // [SECTION] Details : Flags & Enumerations
         //-----------------------------------------------------------------------------
 
         /**
@@ -875,12 +950,15 @@ namespace myxml
          * @{
          */
 
-        enum class token_t
+        enum class token_t : uint8_t
         {
             unknown,
+            stream_end,
+            end_of_input,
+            stream_start,
         };
 
-        enum class error_t
+        enum class error_t : uint8_t
         {
             unknown,
             lexer,
@@ -892,17 +970,17 @@ namespace myxml
             decoding,
         };
 
-        enum class event_t
+        enum class event_t : uint8_t
         {
             unknown,
         };
 
-        enum class value_t
+        enum class value_t : uint8_t
         {
             unknown,
         };
 
-        enum class break_t
+        enum class break_t : uint8_t
         {
             any, /** Let the parser choose the break type. */
             cr,  /** Use CR for line breaks (Mac style). */
@@ -914,7 +992,7 @@ namespace myxml
         /** @} group enum */
 
         //-----------------------------------------------------------------------------
-        // [SECTION] Data Structures
+        // [SECTION] Details : Data Structures
         //-----------------------------------------------------------------------------
 
         /**
@@ -940,16 +1018,269 @@ namespace myxml
         struct token
         {
             token_t type{token_t::unknown}; /** The token type. */
+#ifndef MYXML_NO_STL
+            std::string text; /** Token text/value (for string/number). */
+#else
             union
             {
                 char *value;
-
             } value;
+#endif
             mark start{}; /** The beginning of the token. */
             mark end{};   /** The end of the token. */
         };
 
         /** @} group structs */
+
+        //-----------------------------------------------------------------------------
+        // [SECTION] Details : Encoding
+        //-----------------------------------------------------------------------------
+
+        /**
+         * @defgroup encoding
+         * @brief Encoding helpers for UTF-8/16/32 and byte-order utilities.
+         *
+         * These helpers are used internally by the parser and emitter to
+         * detect input encodings, decode individual code points and encode
+         * code points back into the target encoding.
+         */
+
+        using encoding = myxml::encoding;
+
+#if defined(__cpp_lib_endian)
+
+        /**
+         * @brief Standard-compliant enum class representing endianness.
+         */
+        using endian = std::endian;
+#else
+        /**
+         * @brief Indicates the byte order (endianness) of scalar types.
+         */
+        enum class endian
+        {
+#if MYXML_COMPILER_IS_GCC
+            little = __ORDER_LITTLE_ENDIAN__,
+            big = __ORDER_BIG_ENDIAN__,
+            native = __BYTE_ORDER__
+#else
+            little = 0,
+            big = 1,
+            native = little
+#endif // MYXML_COMPILER_IS_GCC
+        };
+#endif // __cpp_lib_endian
+
+        /**
+         * @brief Determine the text encoding of the supplied buffer.
+         *
+         * This function performs a best-effort inspection of the initial
+         * bytes available at @p data (up to @p size) and returns a
+         * corresponding myxml::encoding value describing the likely
+         * encoding of the input text. Detection considers byte-order
+         * marks (BOM), typical UTF-8/16/32 headers, and short sequences
+         * that are unambiguous. The function never throws.
+         *
+         * Usage:
+         * - Call with the pointer to the first byte of the input and the
+         *   number of bytes available for inspection. Typical callers pass
+         *   the whole buffer or the first 4 bytes. If @p size is 0 the
+         *   function will return myxml::encoding::unspecified.
+         *
+         * @param data Pointer to the input bytes to examine. May be nullptr
+         *             if @p size is zero.
+         * @param size Number of bytes available at @p data.
+         *
+         * @returns A value from myxml::encoding describing the detected encoding
+         *      and myxml::encoding::unspecified if detection failed or
+         *      the input is insufficient to make a determination.
+         */
+        encoding determine_encoding(void *data, size_t size);
+
+        /**
+         * @brief UTF-8 encoding helpers.
+         *
+         * The helper exposes low-level operations used by the parser and
+         * encoder to convert between encoded byte sequences and Unicode
+         * code points. Functions return the number of bytes consumed or
+         * produced on success, and -1 on error.
+         *
+         * Typical usage examples:
+         * - decode(): pass a pointer to UTF-8 bytes and available size to
+         *   obtain the decoded Unicode code point and number of bytes
+         *   consumed.
+         * - encode(): provide a Unicode code point and an output buffer
+         *   to write the UTF-8 encoded bytes.
+         */
+        struct utf8
+        {
+
+#if MYXML_HAS_CHAR8_T
+            using char_t = char8_t;
+#else
+            using char_t = char;
+#endif // MYXML_HAS_CHAR8_T
+
+            /**
+             * @brief Decode a single UTF-8 code point from a byte buffer.
+             *
+             * Reads 1..4 bytes from @p data (not more than @p size) and
+             * writes the resulting Unicode code point into @p value.
+             *
+             * @param data Pointer to UTF-8 bytes.
+             * @param size Number of bytes available.
+             * @param[out] value Decoded Unicode code point on success.
+             * @return Number of bytes consumed (1..4) or -1 on error.
+             */
+            static int decode(const char *data, size_t size, unsigned int &value);
+
+            /**
+             * @brief Encode a Unicode code point as UTF-8.
+             *
+             * Writes the UTF-8 byte sequence for @p codepoint into
+             * @p output if there is enough room (@p size bytes available).
+             *
+             * @param codepoint The Unicode code point to encode.
+             * @param[out] output Destination buffer for encoded bytes.
+             * @param size Size of the destination buffer in bytes.
+             * @return Number of bytes written (1..4) or -1 on error.
+             */
+            static int encode(unsigned int codepoint, char_t *output, size_t size);
+
+            /**
+             * @brief Convert a UTF-8 std::string to a UTF-16 byte vector.
+             *
+             * This helper is convenience for producing a sequence of bytes
+             * representing UTF-16 code units (endian-aware) from a UTF-8
+             * C++ string.
+             *
+             * @param string Input UTF-8 encoded string.
+             * @param order Desired byte order for output (default: native).
+             * @return A vector of bytes containing the UTF-16 encoding.
+             */
+            static std::vector<unsigned char> to_utf16(const std::string &string, endian order = endian::native);
+
+            /**
+             * @brief Convert a UTF-8 std::string to a UTF-32 byte vector.
+             *
+             * Similar to to_utf16() but produces UTF-32 (4 bytes per
+             * code point), arranged according to @p order.
+             *
+             * @param string Input UTF-8 encoded string.
+             * @param order Desired byte order for output (default: native).
+             * @return A vector of bytes containing the UTF-32 encoding.
+             */
+            static std::vector<unsigned char> to_utf32(const std::string &string, endian order = endian::native);
+        };
+
+        /**
+         * @brief UTF-16 encoding helpers.
+         *
+         * Handles decoding of one or two UTF-16 code units (surrogate
+         * pairs) into a single Unicode code point and encoding code
+         * points into UTF-16 code units. All functions accept an
+         * explicit @p order describing byte order for multi-byte units.
+         */
+        struct utf16
+        {
+            using char_t = char16_t;
+
+            /**
+             * @brief Decode a UTF-16 code unit sequence into a unicode code point.
+             *
+             * The function reads 2 or 4 bytes depending on whether a surrogate
+             * pair is present. The @p data pointer is treated as a byte pointer
+             * using the @p order endianness otherwise native endianness.
+             *
+             * @param data Pointer to UTF-16 data (bytes).
+             * @param size Number of bytes available at @p data.
+             * @param[out] value Decoded Unicode code point on success.
+             * @param order Order to interprete incoming bytes.
+             * @return Number of bytes consumed (2 or 4) or -1 on error.
+             */
+            static int decode(const char *data, size_t size, unsigned int &value, endian order = endian::native);
+
+            /**
+             * @brief Encode a Unicode code point into UTF-16 code units.
+             *
+             * Writes one or two @p codepoint (2 or 4 bytes) to @p output
+             * depending on whether the code point requires a surrogate pair
+             * using the @p order endianness otherwise the native endianness.
+             *
+             * @param codepoint The Unicode code point to encode.
+             * @param[out] output Destination buffer for UTF-16 code units.
+             * @param size Size of the destination buffer in bytes.
+             * @param order Order to represent/write the code units (codepoint) in.
+             * @return Number of UTF-16 bytes written (2 or 4) or -1 on error.
+             */
+            static int encode(unsigned int codepoint, char_t *output, size_t size, endian order = endian::native);
+
+            /**
+             * @brief Convert a UTF-16 byte vector into a UTF-8 std::string.
+             *
+             * Interprets @p bytes as UTF-16 code units in the given
+             * @p order and returns the UTF-8 encoded form.
+             *
+             * @param bytes Byte vector containing UTF-16 code units.
+             * @param order Byte order of the input data.
+             * @return UTF-8 encoded std::string on success. If input is
+             *         ill-formed the function will attempt best-effort
+             *         conversion and may replace invalid sequences.
+             */
+            static std::string to_utf8(const std::vector<unsigned char> &bytes, endian order = endian::native);
+        };
+
+        /**
+         * @brief UTF-32 encoding helpers.
+         *
+         * UTF-32 uses a fixed 4-byte representation per Unicode code
+         * point. These helpers decode and encode individual code points
+         * and can convert between byte vectors and UTF-8 strings.
+         */
+        struct utf32
+        {
+            using char_t = char32_t;
+
+            /**
+             * @brief Decode a UTF-32 encoded value.
+             *
+             * Reads up to 4 bytes from @p data interpreting them according
+             * to @p order and returns the decoded code point.
+             *
+             * @param data Pointer to input bytes containing a UTF-32 unit.
+             * @param size Number of bytes available at @p data (should be >=4).
+             * @param[out] value Decoded Unicode code point on success.
+             * @param order Byte order of the input bytes.
+             * @return Number of bytes consumed (4) on success, or -1 on error.
+             */
+            static int decode(const char *data, size_t size, unsigned int &value, endian order = endian::native);
+
+            /**
+             * @brief Encode a Unicode code point as UTF-32.
+             *
+             * Writes 4 bytes for @p codepoint into @p output using the
+             * specified @p order.
+             *
+             * @param codepoint Unicode code point to encode.
+             * @param[out] output Buffer to receive char32_t values.
+             * @param size Number of char32_t entries available in @p output.
+             * @param order Byte order to use for the output.
+             * @return Number of units written (1 == 4 bytes) or -1 on error.
+             */
+            static int encode(unsigned int codepoint, char_t *output, size_t size, endian order = endian::native);
+
+            /**
+             * @brief Convert a UTF-32 byte vector into a UTF-8 std::string.
+             *
+             * @param bytes Byte vector containing UTF-32 code units.
+             * @param order Byte order of the input data.
+             * @return UTF-8 encoded std::string on success. Invalid input
+             *         sequences are handled best-effort.
+             */
+            static std::string to_utf8(const std::vector<unsigned char> &bytes, endian order = endian::native);
+        };
+
+        /** @} group encoding */
 
         /**
          * @defgroup input
@@ -968,11 +1299,19 @@ namespace myxml
         {
         public:
             /**
-             * @brief Return the encoding type of the input adapter.
-             *
-             * @return The encoding type.
+             * @brief Default copy assignment operator
              */
-            virtual myxml::encoding encoding() = 0;
+            iadapter() = default;
+
+            /**
+             * @brief Default copy constructor
+             */
+            iadapter(const iadapter &) = default;
+
+            /**
+             * @brief Default move constructor
+             */
+            iadapter(iadapter &&) noexcept = default;
 
             /**
              * @brief Read up to @p size bytes into @p data.
@@ -984,7 +1323,17 @@ namespace myxml
              * @param[in] size Number of bytes requested.
              * @return The number of bytes actually read, or `0` if an error occurred.
              */
-            virtual std::size_t read(void *data, std::size_t size) = 0;
+            virtual size_t read(void *data, size_t size) = 0;
+
+            /**
+             * @brief Default copy assignment operator
+             */
+            iadapter &operator=(const iadapter &) = default;
+
+            /**
+             * @brief Default move assignment operator
+             */
+            iadapter &operator=(iadapter &&) noexcept = default;
 
             /**
              * @brief Virtual destructor.
@@ -992,19 +1341,19 @@ namespace myxml
             virtual ~iadapter() = default;
         };
 
+        /**
+         * @class file_iadapter
+         * @brief Input adapter that reads from a C `FILE*`.
+         */
         class file_iadapter : public iadapter
         {
         public:
             /**
-             * @brief Construct the stream from a FILE pointer
-             *
-             * @param file file to open
-             *
-             * @throws myxml::exception on error
+             * @brief Construct the stream from a FILE pointer.
+             * @param file File pointer to read from (must be valid for the lifetime).
+             * @throws myxml::exception on error.
              */
-            file_iadapter(std::FILE *file);
-
-            file_iadapter(std::FILE *file, myxml::encoding encoding);
+            explicit file_iadapter(FILE *file);
 
             /**
              * @brief Deleted copy constructor
@@ -1017,20 +1366,13 @@ namespace myxml
             file_iadapter(file_iadapter &&) noexcept = default;
 
             /**
-             * @brief Return the encoding type.
-             *
-             * @return The encoding type.
-             */
-            myxml::encoding encoding() override;
-
-            /**
              * @brief Read up to @p size bytes into @p data.
              *
              * @param[out] data Buffer to receive the bytes.
              * @param[in] size Number of bytes requested.
              * @return The number of bytes actually read, or `0` if an error occurred.
              */
-            std::size_t read(void *data, std::size_t size) override;
+            size_t read(void *data, size_t size) override;
 
             /**
              * @brief Deleted copy assignment operator
@@ -1044,17 +1386,22 @@ namespace myxml
 
         private:
             /** Member data */
-
-            myxml::encoding m_encoding;
-            std::FILE *m_file;
+            FILE *m_file;
         };
 
+#ifndef MYXML_NO_STL
+        /**
+         * @class stream_iadapter
+         * @brief Input adapter that reads from a C++ `std::istream`.
+         */
         class stream_iadapter : public iadapter
         {
         public:
-            stream_iadapter(std::istream &stream);
-
-            stream_iadapter(std::istream &stream, myxml::encoding encoding);
+            /**
+             * @brief Construct a stream-based input adapter from an std::istream.
+             * @param stream Reference to an opened input stream supplying bytes.
+             */
+            explicit stream_iadapter(std::istream &stream);
 
             /**
              * @brief Deleted copy constructor
@@ -1067,20 +1414,13 @@ namespace myxml
             stream_iadapter(stream_iadapter &&) noexcept = default;
 
             /**
-             * @brief Return the encoding type.
-             *
-             * @return The encoding type.
-             */
-            myxml::encoding encoding() override;
-
-            /**
              * @brief Read up to @p size bytes into @p data.
              *
              * @param[out] data Buffer to receive the bytes.
              * @param[in] size Number of bytes requested.
              * @return The number of bytes actually read, or `0` if an error occurred.
              */
-            std::size_t read(void *data, std::size_t size) override;
+            size_t read(void *data, size_t size) override;
 
             /**
              * @brief Deleted copy assignment operator
@@ -1094,23 +1434,25 @@ namespace myxml
 
         private:
             /** Member data */
-
-            myxml::encoding m_encoding;
             std::istream *m_stream;
         };
 
+#endif // MYXML_NO_STL
+
+        /**
+         * @class memory_iadapter
+         * @brief Input adapter that reads from a `char*`.
+         */
         class memory_iadapter : public iadapter
         {
         public:
             /**
-             * @brief Construct the stream from its data
-             *
-             * @param data Pointer to the data in memory
+             * @brief Construct the stream from a C-String pointer.
+             * @param data Pointer to the data to read from.
              * @param size Size of the data, in bytes
+             * @throws myxml::exception on error.
              */
-            memory_iadapter(void *data, std::size_t size);
-
-            memory_iadapter(void *data, std::size_t size, myxml::encoding encoding);
+            memory_iadapter(void *data, size_t size);
 
             /**
              * @brief Deleted copy constructor
@@ -1123,20 +1465,13 @@ namespace myxml
             memory_iadapter(memory_iadapter &&) noexcept = default;
 
             /**
-             * @brief Return the encoding type.
-             *
-             * @return The encoding type.
-             */
-            myxml::encoding encoding() override;
-
-            /**
              * @brief Read up to @p size bytes into @p data.
              *
              * @param[out] data Buffer to receive the bytes.
              * @param[in] size Number of bytes requested.
              * @return The number of bytes actually read, or `0` if an error occurred.
              */
-            std::size_t read(void *data, std::size_t size) override;
+            size_t read(void *data, size_t size) override;
 
             /**
              * @brief Deleted copy assignment operator
@@ -1150,17 +1485,26 @@ namespace myxml
 
         private:
             /** Member data */
-
-            myxml::encoding m_encoding;
-            std::size_t m_pos;
-            std::size_t m_size;
+            size_t m_pos;
+            size_t m_size;
             void *m_data;
         };
 
+        /**
+         * @class lexer
+         * @brief Lexical analyzer for JSON input.
+         *
+         * The lexer reads bytes from an input adapter and produces tokens
+         * consumed by the parser. It is a non-copyable, movable type.
+         */
         class lexer
         {
         public:
-            lexer(iadapter &adapter);
+            /**
+             * @brief Construct a lexer from an input adapter.
+             * @param adapter The input adapter providing raw bytes.
+             */
+            explicit lexer(iadapter *adapter);
 
             /**
              * @brief Deleted copy constructor
@@ -1168,9 +1512,9 @@ namespace myxml
             lexer(const lexer &) = delete;
 
             /**
-             * @brief Default move constructor
+             * @brief Deleted move constructor
              */
-            lexer(lexer &&) noexcept = default;
+            lexer(lexer &&) noexcept = delete;
 
             /**
              * @brief Deleted copy assignment operator
@@ -1183,46 +1527,118 @@ namespace myxml
             lexer &operator=(lexer &&) = delete;
 
             /**
-             * @brief Advance the lexer and return the next token type.
+             * @brief Advance the lexer and return the next token.
              *
-             * This method reads input as necessary and updates the lexer's
-             * internal token state. Callers can inspect the token with
-             * get_token() or check get_type().
+             * This reads from the underlying input adapter as required and
+             * updates the lexer's internal token state. The returned token
+             * value represents the kind of token available.
              *
-             * @return The token produced.
+             * @return The next token produced by the lexer.
              */
             token next_token();
 
             /**
-             * @brief Return the current token.
+             * @brief Return the current token object.
+             *
+             * The returned token contains the token type and any value
+             * information parsed by the lexer (for example string content).
              *
              * @return The current token.
              */
-            token get_token();
+            [[nodiscard]] token get_token();
 
             /**
-             * @brief Return the current token type.
-             *
+             * @brief Return the type of the current token.
              * @return The current token type.
              */
-            token_t get_type();
+            [[nodiscard]] token_t get_type() const;
+
+            [[nodiscard]] token scan();
+
+            [[nodiscard]] mark position() const;
 
         private:
-            int get_char();
+            /**
+             * @defgroup position
+             * @brief position methods.
+             * @{
+             */
+
+            void advance(size_t amount = 1);
+
+            void reverse(size_t amount = 1);
+
+            /** @} group position */
+
+            /**
+             * @defgroup scanner
+             * @brief scanner methods.
+             * @{
+             */
+
+            bool scan_literal();
+
+            bool scan_comment();
+
+            bool scan_string();
+
+            bool scan_number();
+
+            /** @} group scanner */
+
+            int skip_ws();
+
+            /**
+             * @brief Read a character (byte) from the input adapter.
+             * @return The read character value or EOF-like sentinel.
+             */
+            [[nodiscard]] int get_char();
+
+            /**
+             * @brief Push back the last-read character so it can be read again.
+             */
             void unget_char();
-            void add_char(int c);
+
+            /**
+             * @brief Append a character to the current token buffer.
+             * @param character The character value to append.
+             */
+            void add_char(int charater);
 
         private:
-            iadapter &m_adapter;
+            iadapter *m_adapter{nullptr};
+            myxml::encoding m_encoding;
+            std::string m_string; //!
+            std::string m_input{};
+            size_t m_input_pos{0};
+            int m_putback{-1};
             mark m_position;
-
             token m_token;
-            int current;
+            int m_char;
+        };
 
-            // values
-            std::string m_string;
-            float m_float;
-            int m_int;
+        class deserializer
+        {
+        public:
+            /**
+             * @brief Deleted copy constructor
+             */
+            deserializer(const deserializer &) = delete;
+
+            /**
+             * @brief Deleted move constructor
+             */
+            deserializer(deserializer &&) = delete;
+
+            /**
+             * @brief Deleted copy assignment operator
+             */
+            deserializer &operator=(const deserializer &) = delete;
+
+            /**
+             * @brief Delete move assignment operator
+             */
+            deserializer &operator=(deserializer &&) = delete;
         };
 
         /** @} group input */
@@ -1234,32 +1650,51 @@ namespace myxml
          */
 
         /**
+         * @class oadapter
          * @brief Abstract base for output adapters used by the emitter.
          *
-         * All write methods accept a pointer to immutable data (const void*) because
-         * writing should never mutate the caller'string source buffer.
+         * Implementations provide a concrete destination for emitted bytes
+         * (files, memory buffers, ostream, etc.).
          */
         class oadapter
         {
         public:
             /**
-             * @brief Return the encoding type of the output adapter.
-             *
-             * @return The encoding type.
+             * @brief Default copy assignment operator
              */
-            virtual myxml::encoding encoding() = 0;
+            oadapter() = default;
+
+            /**
+             * @brief Default copy constructor
+             */
+            oadapter(const oadapter &) = default;
+
+            /**
+             * @brief Default move constructor
+             */
+            oadapter(oadapter &&) noexcept = default;
 
             /**
              * @brief Write up to @p size bytes from @p data into the stream.
              *
-             * Implementations must copy at most @p size bytes from the provided buffer
-             * and advance the stream position accordingly.
+             * Implementations must copy at most @p size bytes from the provided
+             * buffer and advance the stream position accordingly.
              *
              * @param data Pointer to the bytes to write.
              * @param size Number of bytes to write.
              * @return The number of bytes actually written, or `0` on error.
              */
-            virtual std::size_t write(const void *data, std::size_t size) = 0;
+            virtual size_t write(const void *data, size_t size) = 0;
+
+            /**
+             * @brief Default copy assignment operator
+             */
+            oadapter &operator=(const oadapter &) = default;
+
+            /**
+             * @brief Default move assignment operator
+             */
+            oadapter &operator=(oadapter &&) noexcept = default;
 
             /**
              * @brief Virtual destructor.
@@ -1267,19 +1702,19 @@ namespace myxml
             virtual ~oadapter() = default;
         };
 
+        /**
+         * @class file_oadapter
+         * @brief Output adapter that writes to a C `FILE*`.
+         */
         class file_oadapter : public oadapter
         {
         public:
             /**
-             * @brief Construct the stream from a FILE pointer
-             *
-             * @param file file to open
-             *
-             * @throws myxml::exception on error
+             * @brief Construct the stream from a FILE pointer.
+             * @param file File pointer to write to (must be valid for the lifetime).
+             * @throws myxml::exception on error.
              */
-            file_oadapter(std::FILE *file);
-
-            file_oadapter(std::FILE *file, myxml::encoding encoding);
+            explicit file_oadapter(FILE *file);
 
             /**
              * @brief Deleted copy constructor
@@ -1292,20 +1727,12 @@ namespace myxml
             file_oadapter(file_oadapter &&) noexcept = default;
 
             /**
-             * @brief Return the encoding type.
-             *
-             * @return The encoding type.
-             */
-            myxml::encoding encoding() override;
-
-            /**
-             * @brief Write up to @p size bytes from @p data into the stream.
-             *
-             * @param data Pointer to the bytes to write.
+             * @brief Write raw bytes to the underlying FILE*.
+             * @param data Pointer to bytes to write.
              * @param size Number of bytes to write.
-             * @return The number of bytes actually written, or `0` on error.
+             * @return Number of bytes written or `0` on error.
              */
-            std::size_t write(const void *data, std::size_t size) override;
+            size_t write(const void *data, size_t size) override;
 
             /**
              * @brief Deleted copy assignment operator
@@ -1319,17 +1746,22 @@ namespace myxml
 
         private:
             /** Member data */
-
-            myxml::encoding m_encoding;
-            std::FILE *m_file;
+            FILE *m_file;
         };
 
+#ifndef MYXML_NO_STL
+        /**
+         * @class stream_oadapter
+         * @brief Output adapter that writes to a C++ `std::ostream`.
+         */
         class stream_oadapter : public oadapter
         {
         public:
-            stream_oadapter(std::ostream &stream);
-
-            stream_oadapter(std::ostream &stream, myxml::encoding encoding);
+            /**
+             * @brief Construct a stream-based output adapter from an std::ostream.
+             * @param stream Reference to an opened output stream to write bytes to.
+             */
+            explicit stream_oadapter(std::ostream &stream);
 
             /**
              * @brief Deleted copy constructor
@@ -1342,20 +1774,13 @@ namespace myxml
             stream_oadapter(stream_oadapter &&) noexcept = default;
 
             /**
-             * @brief Return the encoding type.
-             *
-             * @return The encoding type.
-             */
-            myxml::encoding encoding() override;
-
-            /**
              * @brief Write up to @p size bytes from @p data into the stream.
              *
              * @param data Pointer to the bytes to write.
              * @param size Number of bytes to write.
              * @return The number of bytes actually written, or `0` on error.
              */
-            std::size_t write(const void *data, std::size_t size) override;
+            size_t write(const void *data, size_t size) override;
 
             /**
              * @brief Deleted copy assignment operator
@@ -1369,23 +1794,25 @@ namespace myxml
 
         private:
             /** Member data */
-
-            myxml::encoding m_encoding;
             std::ostream *m_stream;
         };
 
+#endif // MYXML_NO_STL
+
+        /**
+         * @class memory_oadapter
+         * @brief Output adapter that writes to a `char*`.
+         */
         class memory_oadapter : public oadapter
         {
         public:
             /**
-             * @brief Construct the stream from its data
-             *
-             * @param data        Pointer to the data in memory
+             * @brief Construct the stream from a C-String pointer.
+             * @param data Pointer to the data to write to.
              * @param size Size of the data, in bytes
+             * @throws myxml::exception on error.
              */
-            memory_oadapter(void *data, std::size_t size);
-
-            memory_oadapter(void *data, std::size_t size, myxml::encoding encoding);
+            memory_oadapter(void *data, size_t size);
 
             /**
              * @brief Deleted copy constructor
@@ -1398,20 +1825,13 @@ namespace myxml
             memory_oadapter(memory_oadapter &&) noexcept = default;
 
             /**
-             * @brief Return the encoding type.
-             *
-             * @return The encoding type.
-             */
-            myxml::encoding encoding() override;
-
-            /**
              * @brief Write up to @p size bytes from @p data into the stream.
              *
              * @param data Pointer to the bytes to write.
              * @param size Number of bytes to write.
              * @return The number of bytes actually written, or `0` on error.
              */
-            std::size_t write(const void *data, std::size_t size) override;
+            size_t write(const void *data, size_t size) override;
 
             /**
              * @brief Deleted copy assignment operator
@@ -1425,20 +1845,122 @@ namespace myxml
 
         private:
             /** Member data */
-
-            myxml::encoding m_encoding;
-            std::size_t m_pos;
-            std::size_t m_size;
+            size_t m_pos;
+            size_t m_size;
             void *m_data;
+        };
+
+        class serializer
+        {
+        public:
+            /**
+             * @brief Deleted copy constructor
+             */
+            serializer(const serializer &) = delete;
+
+            /**
+             * @brief Deleted move constructor
+             */
+            serializer(serializer &&) = delete;
+
+            /**
+             * @brief Deleted copy assignment operator
+             */
+            serializer &operator=(const serializer &) = delete;
+
+            /**
+             * @brief Delete move assignment operator
+             */
+            serializer &operator=(serializer &&) = delete;
         };
 
         /** @} group output */
 
         //-----------------------------------------------------------------------------
-        // [SECTION] Function Declarations
+        // [SECTION] Details : Functions
         //-----------------------------------------------------------------------------
 
+        const char *string(token_t type);
+        const char *string(error_t type);
+        const char *string(event_t type);
+        const char *string(value_t type);
+        const char *string(break_t type);
+
+        const char *string(mark type);
+        const char *string(event type);
+        const char *string(token type);
+
+#ifndef MYXML_NO_STL
+
+        /**
+         * @brief Write the token type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] type An token type.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const token_t &type);
+
+        /**
+         * @brief Write the error type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] type A error type.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const error_t &type);
+
+        /**
+         * @brief Write the event type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] type A event type.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const event_t &type);
+
+        /**
+         * @brief Write the value type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] type A value type.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const value_t &type);
+
+        /**
+         * @brief Write the break type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] type A break type.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const break_t &type);
+
+        /**
+         * @brief Write the token type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] mark A mark object.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const mark &type);
+
+        /**
+         * @brief Write the error type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] event An event object.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const event &type);
+
+        /**
+         * @brief Write the event type string into stream.
+         * @param[in] ostream An output stream object.
+         * @param[in] token A event object.
+         * @return Reference to the output stream object `ostream`.
+         */
+        std::ostream &operator<<(std::ostream &ostream, const token &type);
+
+#endif // MYXML_NO_STL
+
     }; // namespace detail
+
+    MYXML_VERSION_NAMESPACE_END
 
 } // namespace myxml
 
@@ -1452,8 +1974,10 @@ namespace myxml
  */
 namespace myxml
 {
+    MYXML_VERSION_NAMESPACE_BEGIN
+
     //-----------------------------------------------------------------------------
-    // [SECTION] Flags & Enumerations
+    // [SECTION] Myxml : Flags & Enumerations
     //-----------------------------------------------------------------------------
 
     /**
@@ -1462,9 +1986,9 @@ namespace myxml
      * @{
      */
 
-    enum class encoding
+    enum class encoding : uint8_t
     {
-        Unspecified, /** Let the parser choose the encoding. */
+        unspecified, /** Let the parser choose the encoding. */
         utf8,        /** The UTF-8 encoding. */
         utf16,       /** The UTF-16-LE encoding with native endianness. */
         utf16le,     /** The UTF-16-LE encoding with BOM. */
@@ -1474,7 +1998,7 @@ namespace myxml
         utf32be,     /** The UTF-32-BE encoding with BOM. */
     };
 
-    enum class node_t
+    enum class node_t : uint8_t
     {
         unknown,
     };
@@ -1482,7 +2006,7 @@ namespace myxml
     /** @} */
 
     //-----------------------------------------------------------------------------
-    // [SECTION] Data Structures
+    // [SECTION] Myxml : Data Structures
     //-----------------------------------------------------------------------------
 
     /**
@@ -1518,18 +2042,28 @@ namespace myxml
         version(int major, int minor, int patch);
 
     public:
-        /** Member data */
+        // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
+
         int major{}; /** The major version number. */
         int minor{}; /** The minor version number. */
         int patch{}; /** The patch version number. */
+
+        // NOLINTEND(misc-non-private-member-variables-in-classes)
     };
 
+    /**
+     * @name Version comparison operators
+     * @{
+     */
     bool operator<(const version &lhs, const version &rhs) noexcept;
     bool operator>(const version &lhs, const version &rhs) noexcept;
     bool operator==(const version &lhs, const version &rhs) noexcept;
     bool operator!=(const version &lhs, const version &rhs) noexcept;
     bool operator<=(const version &lhs, const version &rhs) noexcept;
     bool operator>=(const version &lhs, const version &rhs) noexcept;
+    /** @} */
+
+#ifndef MYXML_NO_STL
 
     /**
      * @brief Write the version object string into stream.
@@ -1540,6 +2074,10 @@ namespace myxml
      * @return Reference to the output stream object `ostream`.
      */
     std::ostream &operator<<(std::ostream &ostream, const version &version);
+
+#endif // MYXML_NO_STL
+
+#ifndef MYXML_NO_EXCEPTIONS
 
     /**
      * @class myxml::exception
@@ -1557,44 +2095,162 @@ namespace myxml
          * @brief Construct a new exception object with an error messages.
          * @param[in] message An error message.
          */
-        exception(const char *message) noexcept;
+        explicit exception(const char *message) noexcept;
 
         /**
          * @brief Returns an error message internally held. If nothing, a non-null,
          * empty string will be returned.
          * @return An error message internally held. The message might be empty.
          */
-        const char *what() const noexcept override;
+        [[nodiscard]] const char *what() const noexcept override;
 
     private:
         std::string m_Message; /** An error message holder. */
     };
 
+    class parse_error : public exception
+    {
+    public:
+        /**
+         * @brief Construct a new parse_error object.
+         *
+         * @param message An error message.
+         */
+        explicit parse_error(const char *message) noexcept;
+
+        /**
+         * @brief Construct a new encoding_error object.
+         *
+         * @param msg An error message.
+         * @param mark The error position.
+         */
+        parse_error(const char *message, detail::mark mark) noexcept;
+
+    private:
+        /**
+         * @brief Generate an error message from the given parameters.
+         *
+         * This helper constructs a human-readable error message that
+         * includes the supplied @p message and positional information from
+         * @p mark (line, column, index). The returned C-string pointer is a
+         * pointer into an internal, thread-local buffer owned by the
+         * implementation. The pointer is valid until the next call to this
+         * function on the same thread. Callers (for example the
+         * exception constructors) should immediately copy the returned
+         * string if they need to retain it long-term.
+         *
+         * @param message An error message. May be nullptr.
+         * @param mark The error position.
+         *
+         * @return Pointer to a null-terminated C-string describing the error.
+         */
+        static const char *generate(const char *message, detail::mark mark) noexcept;
+    };
+
+    class encoding_error : public exception
+    {
+    public:
+        /**
+         * @brief Construct a new encoding_error object.
+         *
+         * @param message An error message.
+         */
+        explicit encoding_error(const char *message) noexcept;
+
+        /**
+         * @brief Construct a new encoding_error object.
+         *
+         * @param encoding The encoding.
+         * @param message An error message.
+         * @param data The Encoded character.
+         * @param size Number of bytes of data.
+         */
+        encoding_error(encoding encoding, const char *message, void *data, size_t size) noexcept;
+
+    private:
+        /**
+         * @brief Generate an error message from encoding-related parameters.
+         *
+         * Builds a human-readable message including the @p message, the
+         * detected @p encoding and a short hex representation of the
+         * problematic @p data (up to a small limit). The returned pointer
+         * points into an internal, thread-local buffer and is valid until
+         * the next call to this function on the same thread. Callers must
+         * copy the string if they need to keep it beyond the immediate use
+         * (the exception constructors copy it into their member storage).
+         *
+         * @param encoding The detected encoding for the data.
+         * @param message An error message. May be nullptr.
+         * @param data Pointer to the raw encoded character bytes, or nullptr.
+         * @param size Number of bytes available at @p data.
+         *
+         * @return Pointer to a null-terminated C-string describing the error.
+         */
+        static const char *generate(encoding encoding, const char *message, void *data, size_t size) noexcept;
+    };
+
+#endif // MYXML_NO_EXCEPTIONS
+
+    /**
+     * @class myxml::xml
+     * @brief Lightweight JSON value holder.
+     *
+     * This is a placeholder for the public JSON value type. Public API and
+     * value accessors will be provided in the implementation file. The
+     * internal representation is intentionally minimal in this header stub.
+     */
+    class xml
+    {
+        int m_int;
+    };
+
     /** @} */
 
     //-----------------------------------------------------------------------------
-    // [SECTION] Function Declarations
+    // [SECTION] Myxml : Functions
     //-----------------------------------------------------------------------------
+
+    const char *string(encoding type);
+
+    const char *string(node_t type);
+
+#ifndef MYXML_NO_STL
+
+    /**
+     * @brief Write the encoding type string into stream.
+     * @param[in] ostream An output stream object.
+     * @param[in] type An encoding type.
+     * @return Reference to the output stream object `ostream`.
+     */
+    std::ostream &operator<<(std::ostream &ostream, const encoding &type);
+
+    /**
+     * @brief Write the node type string into stream.
+     * @param[in] ostream An output stream object.
+     * @param[in] type A node type.
+     * @return Reference to the output stream object `ostream`.
+     */
+    std::ostream &operator<<(std::ostream &ostream, const node_t &type);
 
     /**
      * @brief A wrapper for the serialization feature.
-     *
      * @param[in] stream An output stream object.
      * @param[in] node A xml object.
-     *
      * @return Reference to the output stream object `stream`.
      */
     std::ostream &operator<<(std::ostream &stream, const xml &node);
 
     /**
      * @brief A wrapper for the deserialization feature.
-     *
      * @param[in] stream An input stream object.
      * @param[in] node A xml object.
-     *
      * @return Reference to the input stream object `stream`.
      */
     std::istream &operator>>(std::istream &stream, const xml &node);
+
+#endif // MYXML_NO_STL
+
+    MYXML_VERSION_NAMESPACE_END
 
 } // namespace myxml
 
@@ -1608,6 +2264,7 @@ namespace myxml
  */
 namespace myxml
 {
+    MYXML_VERSION_NAMESPACE_BEGIN
 
     /**
      * @namespace literals
@@ -1616,60 +2273,65 @@ namespace myxml
     namespace literals
     {
 
-        //-----------------------------------------------------------------------------
-        // [SECTION] Function Declarations
-        //-----------------------------------------------------------------------------
+        inline namespace xml_literals
+        {
+            //-----------------------------------------------------------------------------
+            // [SECTION] Literals : Functions
+            //-----------------------------------------------------------------------------
 
-        // Whitespace before the literal operator is deprecated in C++23 or later but required in C++11.
-        MYXML_CLANG_SUPPRESS_WARNING_WITH_PUSH("-Wdeprecated")
+            // Whitespace before the literal operator is deprecated in C++23 or later but required in C++11.
+            MYXML_CLANG_SUPPRESS_WARNING_WITH_PUSH("-Wdeprecated")
 
-        /**
-         * @brief Deserializes a `char` array into a `xml` object.
-         *
-         * @param s An input `char` array.
-         * @param node The size of `s`.
-         *
-         * @return The resulting `xml` object deserialized from `s`.
-         */
-        inline xml MYXML_QUOTE_OPERATOR(const char *s, std::size_t node);
+            /**
+             * @brief Deserializes a `char` array into a `xml` object.
+             *
+             * @param string An input `char` array.
+             * @param size The size of `string`.
+             *
+             * @return The resulting `xml` object deserialized from `string`.
+             */
+            MYXML_INLINE xml MYXML_QUOTE_OPERATOR(const char *string, size_t size);
 
 #if MYXML_HAS_CHAR8_T
 
-        /**
-         * @brief Deserializes a `char8_t` array into a `xml` object.
-         *
-         * @param s An input `char8_t` array.
-         * @param node The size of `s`.
-         *
-         * @return The resulting `xml` object deserialized from `s`.
-         */
-        inline xml MYXML_QUOTE_OPERATOR(const char8_t *s, std::size_t node);
+            /**
+             * @brief Deserializes a `char8_t` array into a `xml` object.
+             *
+             * @param string An input `char8_t` array.
+             * @param size The size of `string`.
+             *
+             * @return The resulting `xml` object deserialized from `string`.
+             */
+            MYXML_INLINE xml MYXML_QUOTE_OPERATOR(const char8_t *string, size_t size);
 
 #endif // MYXML_HAS_CHAR8_T
 
-        /**
-         * @brief Deserializes a `char16_t` array into a `xml` object.
-         *
-         * @param s An input `char16_t` array.
-         * @param node The size of `s`.
-         *
-         * @return The resulting `xml` object deserialized from `s`.
-         */
-        inline xml MYXML_QUOTE_OPERATOR(const char16_t *s, std::size_t node);
+            /**
+             * @brief Deserializes a `char16_t` array into a `xml` object.
+             *
+             * @param string An input `char16_t` array.
+             * @param size The size of `string`.
+             *
+             * @return The resulting `xml` object deserialized from `string`.
+             */
+            MYXML_INLINE xml MYXML_QUOTE_OPERATOR(const char16_t *string, size_t size);
 
-        /**
-         * @brief Deserializes a `char32_t` array into a `xml` object.
-         *
-         * @param s An input `char32_t` array.
-         * @param node The size of `s`.
-         *
-         * @return The resulting `xml` object deserialized from `s`.
-         */
-        inline xml MYXML_QUOTE_OPERATOR(const char32_t *s, std::size_t node);
+            /**
+             * @brief Deserializes a `char32_t` array into a `xml` object.
+             *
+             * @param string An input `char32_t` array.
+             * @param size The size of `string`.
+             *
+             * @return The resulting `xml` object deserialized from `string`.
+             */
+            MYXML_INLINE xml MYXML_QUOTE_OPERATOR(const char32_t *string, size_t size);
 
-        MYXML_CLANG_SUPPRESS_WARNING_POP
+            MYXML_CLANG_SUPPRESS_WARNING_POP
 
+        } // namespace xml_literals
     } // namespace literals
+
+    MYXML_VERSION_NAMESPACE_END
 
 }; // namespace myxml
 
