@@ -15,9 +15,10 @@ if myxml_build_examples
     foreach example : myxml_examples
 
 		exe = executable(
-            example, example,
-            include_directories: incdir,
-            link_with: [myxml_lib],
+                        example,
+                        'apis/' + example,
+                        include_directories: myxml_include_dirs,
+                        dependencies: [myxml_dep],
             install: false
         )
         
@@ -31,10 +32,11 @@ if myxml_build_examples
 
     foreach example : myxmlc_examples
 
-		exe = executable(example + 'c',
+		exe = executable(
+                        example + 'c',
             'apis/' + example,
-            include_directories: incdir,
-            link_with: [myxmlc_lib], 
+                        include_directories: myxml_include_dirs,
+                        dependencies: [myxmlc_dep],
             install: false
         )
 
